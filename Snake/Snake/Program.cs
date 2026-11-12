@@ -1,5 +1,6 @@
 ﻿using Common;
 using Newtonsoft.Json;
+using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -16,7 +17,19 @@ namespace Snake
 
         public static void Main()
         {
+            try
+            {
+                Thread tRec = new(new ThreadStart(Reciever));
+                tRec.Start();
 
+                Thread time = new(Timer);
+                time.Start();
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Возникло исключение: " + ex.ToString() + "\n " + ex.Message);
+            }
         }
 
         private static void Send()
@@ -54,8 +67,8 @@ namespace Snake
 
         public static void Reciever()
         {
-            UdpClient receivingUdpClient = new UdpClient(localPort);
-            IPEndPoint RemoteIpEndPoint = null;
+            UdpClient receivingUdpClient = new(localPort);
+            IPEndPoint? RemoteIpEndPoint = null;
 
             try
             {
@@ -275,12 +288,33 @@ namespace Snake
 
         public static void SaveLeaders()
         {
-
+            string json = JsonConvert.SerializeObject(Leaders);
+            StreamWriter SW = new StreamWriter("./leaders.txt");
+            SW.WriteLine(json);
+            SW.Close();
         }
 
         public static void LoadLeaders()
         {
+            if (File.Exists("./leaders.txt"))
+            {
+                StreamReader SR = new StreamReader("./leaders.txt");
+                string json = SR.ReadLine();
+                SR.Close();
+                if (!string.IsNullOrEmpty(json))
+                {
+                    Leaders = JsonConvert.DeserializeObject<List<Leaders>>(json);
+                }
 
+                else
+                {
+                    Leaders = [];
+                }
+            }
+            else
+            {
+                Leaders = [];
+            }
         }
 
     }
