@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -38,6 +39,8 @@ namespace SnakeWPF
         public MainWindow()
         {
             InitializeComponent();
+            mainWindow = this;
+            OpenPage(Home);
         }
 
         public void StartReceiving()
@@ -73,7 +76,7 @@ namespace SnakeWPF
                     byte[] receiveBytes = receivingUdpClient.Receive(
                         ref RemoteIpEndPoint);
                     string returnData = Encoding.UTF8.GetString(receiveBytes);
-                    if(ViewModelGames == null)
+                    if (ViewModelGames == null)
                     {
                         Dispatcher.Invoke(() =>
                         {
@@ -97,7 +100,49 @@ namespace SnakeWPF
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Debug.WriteLine("Возникло исключение: " + e.ToString() + "\n " + e.Message);
+            }
         }
+        public static void Send(string datagram)
+        {
+            UdpClient sender = new UdpClient();
+            IPEndPoint endPoint = new IPEndPoint(remoteIPAdress, remotePort);
+            try
+            {
+                byte[] bytes = Encoding.UTF8.GetBytes(datagram);
+                sender.Send(bytes, bytes.Length, endPoint);
+            }
+            catch(Exception e)
+            {
+                Debug.WriteLine("Возникло исключение: " + e.ToString() + "\n " + e.Message);
+            }
+            finally
+            {
+                sender.Close();
+            }
+        }
+
+        private void EventKeyUp(object sender, KeyEventArgs e)
+        {
+            if(!string.IsNullOrEmpty(ViewModelUserSettings.IPAddress) && 
+                !string.IsNullOrEmpty(ViewModelUserSettings.Port) && 
+                (ViewModelGames != null && !ViewModelGames.SnakesPlayers.GameOver))
+            {
+                if (e.Key == Key.Up)
+                    Send($"Up|{JsonConvert.SerializeObject(ViewModelUserSettings)}");
+                else if (e.Key == Key.Down)
+                    Send($"Down|{JsonConvert.SerializeObject(ViewModelUserSettings)}");
+                else if (e.Key == Key.Left)
+                    Send($"Left|{JsonConvert.SerializeObject(ViewModelUserSettings)}");
+                else if (e.Key == Key.Right)
+                    Send($"Right|{JsonConvert.SerializeObject(ViewModelUserSettings)}");
+            }
+        }
+        private void QuitApplication(object sender, System.ComponentModel.CancelEventHandler e)
+        {
+            receivingUdpClient.Close();
+            tRec.Abort();
+        }
+        
     }
 }
