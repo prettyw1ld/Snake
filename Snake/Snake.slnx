@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="Common/Common.csproj" Id="e65e2421-f3c4-4939-b767-8ffaf331dc05" />
   <Project Path="Snake/Snake.csproj" />
+  <Project Path="SnakeWPF/SnakeWPF.csproj" Id="1b5d9c4d-93b7-46e3-82c4-3397d5a9deb0" />
 </Solution>
