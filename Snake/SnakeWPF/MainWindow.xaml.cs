@@ -45,7 +45,7 @@ namespace SnakeWPF
 
         public void StartReceiving()
         {
-            tRec = new Thread(new ThreadStart(Reciever));
+            tRec = new Thread(new ThreadStart(Receiver));
             tRec.Start();
         }
         public void OpenPage(Page PageOpen)
@@ -138,11 +138,10 @@ namespace SnakeWPF
                     Send($"Right|{JsonConvert.SerializeObject(ViewModelUserSettings)}");
             }
         }
-        private void QuitApplication(object sender, System.ComponentModel.CancelEventHandler e)
+        private void QuitApplication(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            receivingUdpClient.Close();
-            tRec.Abort();
+            receivingUdpClient?.Close();
+            tRec?.Abort();
         }
-        
     }
 }
